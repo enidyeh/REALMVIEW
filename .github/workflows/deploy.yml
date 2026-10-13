@@ -1,5 +1,16 @@
 name: Deploy to GitHub Pages
 
+# 推送到 main 就构建并发布到 GitHub Pages：
+#   https://enidyeh.github.io/REALMVIEW/
+# 站点挂在 /REALMVIEW/ 子路径下，base 由 vite.config.ts 的 `--mode pages` 处理。
+#
+# ⚠️ 关于 Pages 的开启：第一次必须先手动点一次
+#    Settings → Pages → Build and deployment → Source = "GitHub Actions"。
+#    这步没法用 GITHUB_TOKEN 自动完成：create-a-pages-site 接口会回
+#    "Resource not accessible by integration"。所以下面的 "检查 Pages 是否已开启"
+#    会先探测一次——没开启就只构建、跳过部署，并在运行摘要里给出提示；
+#    开启之后重跑（或再推一次代码）就会真正发布。
+
 on:
   push:
     branches: [main]
@@ -10,6 +21,7 @@ permissions:
   pages: write
   id-token: write
 
+# 同时只跑一个发布；新的推送取消排队中的旧任务
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -17,32 +29,63 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages: ${{ steps.pages.outputs.enabled }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install
         run: npm ci
 
+      # lint 不过就不发布，免得把坏版本推上线
+      - name: Lint
+        run: npm run lint
+
       - name: Build (base = /REALMVIEW/)
         run: npm run build -- --mode pages
 
+      - name: 检查 Pages 是否已开启
+        id: pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pages")
+          echo "Pages API: HTTP $code"
+          if [ "$code" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⚠️ GitHub Pages 还没开启：本次只构建，没有发布"
+              echo ""
+              echo "在仓库里点一次 **Settings → Pages → Build and deployment → Source**，选 **GitHub Actions**；"
+              echo "然后回到 Actions 重新运行这个工作流（或再推一次代码），就会发布到"
+              echo "https://enidyeh.github.io/REALMVIEW/"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::GitHub Pages 未开启，已跳过部署。请在 Settings → Pages 把 Source 设为 GitHub Actions 后重跑本工作流。"
+          fi
+
       - name: Configure Pages
+        if: steps.pages.outputs.enabled == 'true'
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
+        if: steps.pages.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
     needs: build
+    if: needs.build.outputs.pages == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
