@@ -1,0 +1,114 @@
+/* 域见 REALMVIEW — 独立设计系统 v2「制图 / SPEC」
+   方向：黑白灰细线为主，网格纸底，金属银点缀；颜色只作为功能性标记出现
+   （红 = 交易 / 强调，蓝 = 内容，绿 = 状态，黄 = 索引）。不做大面积色块。
+   本文件不引用、不继承任何其它项目的令牌。 */
+
+:root {
+  color-scheme: light;
+
+  /* 纸：三档底（白 / 次白 / 灰） */
+  --paper: #ffffff;
+  --paper-2: #f4f4f1;
+  --paper-3: #e7e7e3;
+
+  /* 墨：三档灰 */
+  --ink: #0d0d0d;
+  --ink-2: #40403d;
+  --ink-3: #8c8c87;
+
+  /* 线：--line 普通分隔，--line-2 需要看清的线，--rule 主结构线 */
+  --line: rgba(13, 13, 13, 0.13);
+  --line-2: rgba(13, 13, 13, 0.34);
+  --rule: #0d0d0d;
+  --grid: rgba(13, 13, 13, 0.05);
+
+  /* 功能色：本轮统一压成灰阶。
+     保留语义名与取值位置，以后要加回颜色只改这四行 + 三个 wash。 */
+  --red: var(--ink);        /* 强调：价格 / 编号 / 待确认 */
+  --blue: var(--ink-2);     /* 内容：交付物 / 列表符 */
+  --green: var(--ink-2);    /* 栏目标记 */
+  --yellow: var(--ink);     /* 索引页签 / 硬阴影 */
+  --red-wash: var(--paper-2);
+  --blue-wash: var(--paper-2);
+  --yellow-wash: var(--paper-3);
+
+  /* 灰阶四档：需要「同形不同值」的标记用（栏目、序列） */
+  --grey-2: #5f5f5b;
+  --grey-3: #9a9a95;
+  --grey-4: #c9c9c4;
+
+  /* 兼容旧名：signal = 交易 / 强调 */
+  --signal: var(--red);
+  --signal-wash: var(--red-wash);
+  --indigo: var(--blue);
+  --indigo-wash: var(--blue-wash);
+  --ink-soft: var(--ink-2);
+  --ink-faint: var(--ink-3);
+
+  /* 金属银：少量强调面 */
+  --silver: linear-gradient(112deg, #f7f7f5 0%, #d2d2cd 33%, #fcfcfa 50%, #b5b5af 76%, #eaeae6 100%);
+
+  /* 字体族：英文一个等宽族，中文黑体 / 宋体两个族 */
+  --en: 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+  --zh-sans: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --zh-serif: 'Songti SC', 'Source Han Serif SC', 'Noto Serif CJK SC', serif;
+  --mono: var(--en);
+  --sans: var(--zh-sans);
+  --serif: var(--zh-serif);
+
+  /* 字号：只允许五级（各级自带行高） */
+  --f-display: 58px;
+  --f-display-leading: 0.98;
+  --f-title: 30px;
+  --f-title-leading: 1.14;
+  --f-sub: 17px;
+  --f-sub-leading: 1.4;
+  --f-body: 14.5px;
+  --f-body-leading: 1.7;
+  --f-meta: 10.5px;
+  --f-meta-leading: 1.5;
+
+  /* 字距 */
+  --ls-label: 0.2em;
+  --ls-title: -0.02em;
+
+  /* 间距 */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 20px;
+  --s-5: 32px;
+  --s-6: 56px;
+  --s-7: 88px;
+
+  /* 布局 */
+  --shell: 1200px;
+  --gutter: 56px;
+  --header-h: 64px;
+  --nav-h: 0px; /* 导航与品牌同一行，不额外占高 */
+  --top-h: calc(var(--header-h) + var(--nav-h));
+  --radius: 0;
+
+  /* 硬阴影：偏移实心块，不用模糊 */
+  --shift: 4px 4px 0 var(--ink);
+  --shift-red: 4px 4px 0 var(--red);
+  --shift-yellow: 4px 4px 0 var(--yellow);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --f-display: 36px;
+    --f-title: 23px;
+    --f-sub: 16px;
+    --f-body: 14px;
+    --f-meta: 10px;
+    --gutter: 20px;
+    --s-6: 40px;
+    --s-7: 56px;
+    --header-h: 56px;
+    --nav-h: 0px;
+    --shift: 3px 3px 0 var(--ink);
+    --shift-red: 3px 3px 0 var(--red);
+    --shift-yellow: 3px 3px 0 var(--yellow);
+  }
+}
